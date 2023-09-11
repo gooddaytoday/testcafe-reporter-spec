@@ -1,4 +1,30 @@
+
+const fs = require('fs');
+const path = require('path');
+
 export default function () {
+    const reporterName = 'spec-plus';
+
+    const configPath = path.resolve(process.cwd(), '.testcaferc.js');
+    let filter = [];
+
+    if (fs.existsSync(configPath)) {
+        const config = require(configPath);
+        const reporters = config['reporter'];
+
+        for (const reporter of reporters) {
+            if (reporter.name === reporterName) {
+                const filterList = reporter['filter'];
+
+                if (filterList) filter = filterList;
+            }
+        }
+    }
+    else
+        console.log('No .testcaferc.js found');
+
+    const hasFilter = filter.length > 0;
+
     return {
         noColors:       false,
         startTime:      null,
@@ -24,7 +50,7 @@ export default function () {
             });
         },
 
-        reportFixtureStart (name, path, meta) {
+        reportFixtureStart (name, filePath, meta) {
             this.setIndent(1)
                 .useWordWrap(true);
 
@@ -33,7 +59,7 @@ export default function () {
             else
                 this.newline();
 
-            const writeData = { name, path, meta };
+            const writeData = { name, filePath, meta };
 
             this.write(name, writeData)
                 .newline();
@@ -133,6 +159,18 @@ export default function () {
         },
 
         _renderWarnings (warnings, writeData) {
+            const initialWarnings = warnings;
+
+            if (hasFilter) {
+                warnings = warnings.filter(msg => filter.every(f => {
+                    if (typeof f === 'string')
+                        return msg.indexOf(f) === -1;
+                    else if (f instanceof RegExp)
+                        return !f.test(msg);
+                    throw new Error(`Unknown filter type: ${f}`);
+                }));
+            }
+
             this.newline()
                 .setIndent(1)
                 .write(this.chalk.bold.yellow(`Warnings (${warnings.length}):`), writeData)
@@ -146,6 +184,12 @@ export default function () {
                     .write(msg, writeData)
                     .newline();
             });
+            if (hasFilter && initialWarnings.length !== warnings.length) {
+                this.newline()
+                    .setIndent(1)
+                    .write('Non filtered warnings count: ' + initialWarnings.length)
+                    .newline();
+            }
         },
 
         reportTaskDone (endTime, passed, warnings, result) {
