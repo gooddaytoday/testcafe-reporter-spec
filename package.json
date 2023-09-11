@@ -1,11 +1,10 @@
 {
-  "name": "testcafe-reporter-spec",
+  "name": "testcafe-reporter-spec-plus",
   "version": "2.2.0",
-  "description": "Spec TestCafe reporter plugin.",
-  "repository": "https://github.com/DevExpress/testcafe-reporter-spec",
+  "description": "Spec TestCafe reporter plugin with warnings filter and other bonuses.",
+  "repository": "https://github.com/gooddaytoday/testcafe-reporter-spec",
   "author": {
-    "name": "Developer Express Inc. ",
-    "url": "https://devexpress.com"
+    "name": "George Kiselev"
   },
   "main": "lib/index",
   "files": [
@@ -21,7 +20,8 @@
     "testcafe",
     "reporter",
     "plugin",
-    "spec"
+    "spec",
+    "filter"
   ],
   "license": "MIT",
   "devDependencies": {
