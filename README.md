@@ -1,7 +1,21 @@
-# testcafe-reporter-spec
-[![Build Status](https://travis-ci.org/DevExpress/testcafe-reporter-spec.svg)](https://travis-ci.org/DevExpress/testcafe-reporter-spec)
+# testcafe-reporter-spec-plus
 
-This is the **Spec** reporter plugin for [TestCafe](http://devexpress.github.io/testcafe).
+This is fork of the **Spec** reporter plugin for [TestCafe](http://devexpress.github.io/testcafe). You can filter warnings by specifying filter option in testcafe's config file `.testface.js.`:
+
+```js
+module.exports = {
+    ...,
+    reporter: [
+        {
+            name: "spec-plus",
+            filter: [
+                "TestCafe cannot interact with the",  // Substring
+                /Was unable to take a screenshot due/ // Regex also could be used
+            ],
+        },
+    ]
+}
+```
 
 <p align="center">
     <img src="https://raw.github.com/DevExpress/testcafe-reporter-spec/master/media/preview.png" alt="preview" />
@@ -13,16 +27,16 @@ This reporter is shipped with TestCafe by default. In most cases, you won't need
 
 However, if you need to install this reporter, you can use the following command.
 
-```
-npm install testcafe-reporter-spec
+```sh
+npm install testcafe-reporter-spec-plus
 ```
 
 ## Usage
 
 When you run tests from the command line, specify the reporter name by using the `--reporter` option:
 
-```
-testcafe chrome 'path/to/test/file.js' --reporter spec
+```sh
+testcafe chrome 'path/to/test/file.js' --reporter spec-plus
 ```
 
 
@@ -33,9 +47,10 @@ testCafe
     .createRunner()
     .src('path/to/test/file.js')
     .browsers('chrome')
-    .reporter('spec') // <-
+    .reporter('spec-plus') // <-
     .run();
 ```
 
 ## Author
-Developer Express Inc. (https://devexpress.com)
+
+Developer Express Inc. (https://devexpress.com) and [George Kiselev](https://github.com/gooddaytoday)
