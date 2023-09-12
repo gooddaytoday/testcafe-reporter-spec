@@ -7,6 +7,7 @@ export default function () {
 
     const configPath = path.resolve(process.cwd(), '.testcaferc.js');
     let showProgress = false;
+    let showDuration = true;
     let filter = [];
 
     if (fs.existsSync(configPath)) {
@@ -19,6 +20,7 @@ export default function () {
 
                 if (filterList) filter = filterList;
                 if (reporter['showProgress']) showProgress = true;
+                if (reporter['showDuration'] === false) showDuration = false;
                 break;
             }
         }
@@ -90,6 +92,7 @@ export default function () {
             const hasErr  = !!testRunInfo.errs.length;
             let symbol    = null;
             let nameStyle = null;
+            const durationMs = testRunInfo.durationMs;
 
             if (testRunInfo.skipped) {
                 this.skipped++;
@@ -111,6 +114,9 @@ export default function () {
             this.setIndent(1)
                 .useWordWrap(true);
 
+            if (showDuration && durationMs > 0)
+                title += this._humanDuration(durationMs);
+
             if (testRunInfo.unstable)
                 title += this.chalk.yellow(' (unstable)');
 
@@ -129,6 +135,21 @@ export default function () {
             this.afterErrorList = hasErr;
 
             this.newline();
+        },
+
+        _humanDuration (durationMs) {
+            const humanTime = convertToReadableTime(durationMs);
+
+            if (durationMs < 60000)
+                return ` (${humanTime})`;
+            else if (durationMs < 120000)
+                return ` (${this.chalk.yellow(humanTime)})`;
+            else if (durationMs < 500000)
+                return ` (${this.chalk.hex('#FFA500')(humanTime)})`;
+            else if (durationMs < 1000000)
+                return ` (${this.chalk.red(humanTime)})`;
+
+            return ` (${this.chalk.red.bold(humanTime)})`;
         },
 
         _renderReportData (reportData, browsers, writeData) {
@@ -240,4 +261,30 @@ export default function () {
             }
         },
     };
+}
+
+/**
+ * Converts a millisecond value to a human-readable time format.
+ *
+ * @param {number} milliseconds - The millisecond value to convert.
+ * @return {string} The human-readable time format.
+ */
+function convertToReadableTime (milliseconds) {
+    if (milliseconds <= 0)
+        return 'Invalid input in convertToReadableTime: ' + milliseconds;
+
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const days = Math.floor(totalSeconds / (60 * 60 * 24));
+    const hours = Math.floor(totalSeconds % (60 * 60 * 24) / (60 * 60));
+    const minutes = Math.floor(totalSeconds % (60 * 60) / 60);
+    const seconds = totalSeconds % 60;
+
+    const time = [];
+
+    if (days > 0) time.push(`${days} day${days > 1 ? 's' : ''}`);
+    if (hours > 0) time.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    if (minutes > 0) time.push(`${minutes} m`);
+    if (seconds > 0) time.push(`${seconds} s`);
+
+    return time.join(' ').trim();
 }

@@ -4,6 +4,7 @@ This is fork of the **Spec** reporter plugin for [TestCafe](http://devexpress.gi
 
 - Filter warnings by specifying filter option in testcafe's config file `.testface.js.`:
 - Log progress after each fixture. Disabled by default.
+- Add human-readable duration (with colors by duration!) to every test. Enabled by default.
 
 ```js
 module.exports = {
@@ -15,7 +16,8 @@ module.exports = {
                 "TestCafe cannot interact with the",  // Substring
                 /Was unable to take a screenshot due/ // Regex also could be used
             ],
-            showProgress: true // Log progress after each fixture
+            showProgress: true  // Log progress after each fixture
+            showDuration: false // Switch off duration logging
         },
     ]
 }
