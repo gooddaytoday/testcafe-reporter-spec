@@ -1,9 +1,41 @@
+
+const fs = require('fs');
+const path = require('path');
+
 export default function () {
+    const reporterName = 'spec-plus';
+
+    const configPath = path.resolve(process.cwd(), '.testcaferc.js');
+    let showProgress = false;
+    let showDuration = false;
+    let filter = [];
+
+    if (fs.existsSync(configPath)) {
+        const config = require(configPath);
+        const reporters = config['reporter'];
+
+        for (const reporter of reporters) {
+            if (reporter.name === reporterName) {
+                const filterList = reporter['filter'];
+
+                if (filterList) filter = filterList;
+                if (reporter['showProgress']) showProgress = true;
+                if (reporter['showDuration']) showDuration = true;
+                break;
+            }
+        }
+    }
+    else
+        console.log('No .testcaferc.js found');
+
+    const hasFilter = filter.length > 0;
+
     return {
         noColors:       false,
         startTime:      null,
         afterErrorList: false,
         testCount:      0,
+        testsFinished:  0,
         skipped:        0,
 
         reportTaskStart (startTime, userAgents, testCount) {
@@ -24,7 +56,9 @@ export default function () {
             });
         },
 
-        reportFixtureStart (name, path, meta) {
+        reportFixtureStart (name, filePath, meta) {
+            this._renderProgress();
+
             this.setIndent(1)
                 .useWordWrap(true);
 
@@ -33,7 +67,7 @@ export default function () {
             else
                 this.newline();
 
-            const writeData = { name, path, meta };
+            const writeData = { name, filePath, meta };
 
             this.write(name, writeData)
                 .newline();
@@ -54,9 +88,11 @@ export default function () {
         },
 
         reportTestDone (name, testRunInfo, meta) {
+            if (!testRunInfo.skipped) this.testsFinished++;
             const hasErr  = !!testRunInfo.errs.length;
             let symbol    = null;
             let nameStyle = null;
+            const durationMs = testRunInfo.durationMs;
 
             if (testRunInfo.skipped) {
                 this.skipped++;
@@ -78,6 +114,9 @@ export default function () {
             this.setIndent(1)
                 .useWordWrap(true);
 
+            if (showDuration && durationMs > 0)
+                title += this._humanDuration(durationMs);
+
             if (testRunInfo.unstable)
                 title += this.chalk.yellow(' (unstable)');
 
@@ -96,6 +135,21 @@ export default function () {
             this.afterErrorList = hasErr;
 
             this.newline();
+        },
+
+        _humanDuration (durationMs) {
+            const humanTime = convertToReadableTime(durationMs);
+
+            if (durationMs < 60000)
+                return ` (${humanTime})`;
+            else if (durationMs < 180000)
+                return ` (${this.chalk.yellow(humanTime)})`;
+            else if (durationMs < 600000)
+                return ` (${this.chalk.hex('#FFA500')(humanTime)})`;
+            else if (durationMs < 1000000)
+                return ` (${this.chalk.red(humanTime)})`;
+
+            return ` (${this.chalk.red.bold(humanTime)})`;
         },
 
         _renderReportData (reportData, browsers, writeData) {
@@ -133,6 +187,18 @@ export default function () {
         },
 
         _renderWarnings (warnings, writeData) {
+            const initialWarnings = warnings;
+
+            if (hasFilter) {
+                warnings = warnings.filter(msg => filter.every(f => {
+                    if (typeof f === 'string')
+                        return msg.indexOf(f) === -1;
+                    else if (f instanceof RegExp)
+                        return !f.test(msg);
+                    throw new Error(`Unknown filter type: ${f}`);
+                }));
+            }
+
             this.newline()
                 .setIndent(1)
                 .write(this.chalk.bold.yellow(`Warnings (${warnings.length}):`), writeData)
@@ -146,6 +212,12 @@ export default function () {
                     .write(msg, writeData)
                     .newline();
             });
+            if (hasFilter && initialWarnings.length !== warnings.length) {
+                this.newline()
+                    .setIndent(1)
+                    .write('Non filtered warnings count: ' + initialWarnings.length)
+                    .newline();
+            }
         },
 
         reportTaskDone (endTime, passed, warnings, result) {
@@ -177,5 +249,42 @@ export default function () {
             if (warnings.length)
                 this._renderWarnings(warnings, writeData);
         },
+
+        _renderProgress () {
+            if (showProgress && this.testsFinished > 0) {
+                this.newline()
+                    .setIndent(1)
+                    .write(`Completed tests: ${this.testsFinished}/${this.testCount}`)
+                    .newline();
+                if (this.afterErrorList)
+                    this.newline();
+            }
+        },
     };
+}
+
+/**
+ * Converts a millisecond value to a human-readable time format.
+ *
+ * @param {number} milliseconds - The millisecond value to convert.
+ * @return {string} The human-readable time format.
+ */
+function convertToReadableTime (milliseconds) {
+    if (milliseconds <= 0)
+        return 'Invalid input in convertToReadableTime: ' + milliseconds;
+
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const days = Math.floor(totalSeconds / (60 * 60 * 24));
+    const hours = Math.floor(totalSeconds % (60 * 60 * 24) / (60 * 60));
+    const minutes = Math.floor(totalSeconds % (60 * 60) / 60);
+    const seconds = totalSeconds % 60;
+
+    const time = [];
+
+    if (days > 0) time.push(`${days} day${days > 1 ? 's' : ''}`);
+    if (hours > 0) time.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    if (minutes > 0) time.push(`${minutes} m`);
+    if (seconds > 0) time.push(`${seconds} s`);
+
+    return time.join(' ').trim();
 }
