@@ -7,7 +7,7 @@ export default function () {
 
     const configPath = path.resolve(process.cwd(), '.testcaferc.js');
     let showProgress = false;
-    let showDuration = true;
+    let showDuration = false;
     let filter = [];
 
     if (fs.existsSync(configPath)) {
@@ -20,7 +20,7 @@ export default function () {
 
                 if (filterList) filter = filterList;
                 if (reporter['showProgress']) showProgress = true;
-                if (reporter['showDuration'] === false) showDuration = false;
+                if (reporter['showDuration']) showDuration = true;
                 break;
             }
         }
