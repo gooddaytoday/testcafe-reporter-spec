@@ -142,9 +142,9 @@ export default function () {
 
             if (durationMs < 60000)
                 return ` (${humanTime})`;
-            else if (durationMs < 120000)
+            else if (durationMs < 180000)
                 return ` (${this.chalk.yellow(humanTime)})`;
-            else if (durationMs < 500000)
+            else if (durationMs < 600000)
                 return ` (${this.chalk.hex('#FFA500')(humanTime)})`;
             else if (durationMs < 1000000)
                 return ` (${this.chalk.red(humanTime)})`;
