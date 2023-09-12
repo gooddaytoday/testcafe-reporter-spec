@@ -6,6 +6,7 @@ export default function () {
     const reporterName = 'spec-plus';
 
     const configPath = path.resolve(process.cwd(), '.testcaferc.js');
+    let showProgress = false;
     let filter = [];
 
     if (fs.existsSync(configPath)) {
@@ -17,6 +18,8 @@ export default function () {
                 const filterList = reporter['filter'];
 
                 if (filterList) filter = filterList;
+                if (reporter['showProgress']) showProgress = true;
+                break;
             }
         }
     }
@@ -30,6 +33,7 @@ export default function () {
         startTime:      null,
         afterErrorList: false,
         testCount:      0,
+        testsFinished:  0,
         skipped:        0,
 
         reportTaskStart (startTime, userAgents, testCount) {
@@ -51,6 +55,8 @@ export default function () {
         },
 
         reportFixtureStart (name, filePath, meta) {
+            this._renderProgress();
+
             this.setIndent(1)
                 .useWordWrap(true);
 
@@ -80,6 +86,7 @@ export default function () {
         },
 
         reportTestDone (name, testRunInfo, meta) {
+            if (!testRunInfo.skipped) this.testsFinished++;
             const hasErr  = !!testRunInfo.errs.length;
             let symbol    = null;
             let nameStyle = null;
@@ -220,6 +227,17 @@ export default function () {
 
             if (warnings.length)
                 this._renderWarnings(warnings, writeData);
+        },
+
+        _renderProgress () {
+            if (showProgress && this.testsFinished > 0) {
+                this.newline()
+                    .setIndent(1)
+                    .write(`Completed tests: ${this.testsFinished}/${this.testCount}`)
+                    .newline();
+                if (this.afterErrorList)
+                    this.newline();
+            }
         },
     };
 }
