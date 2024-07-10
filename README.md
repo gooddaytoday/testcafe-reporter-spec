@@ -2,7 +2,7 @@
 
 This is fork of the **Spec** reporter plugin for [TestCafe](http://devexpress.github.io/testcafe). You can:
 
-- Filter warnings by specifying filter option in testcafe's config file `.testface.js.`:
+- Filter warnings by specifying filter option in testcafe's config files: `.testcaferc.cjs` and `.testcaferc.cjs`:
 - Log progress after each fixture. Disabled by default.
 - Add human-readable duration (with colors by duration!) to every test. Disabled by default.
 
