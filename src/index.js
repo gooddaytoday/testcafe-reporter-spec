@@ -5,7 +5,11 @@ const path = require('path');
 export default function () {
     const reporterName = 'spec-plus';
 
-    const configPath = path.resolve(process.cwd(), '.testcaferc.js');
+    const configPath = ['.testcaferc.js', '.testcaferc.cjs'].reduce(
+        (acc, file) => acc || path.resolve(process.cwd(), file),
+        null
+    );
+
     let showProgress = false;
     let showDuration = false;
     let filter = [];
@@ -26,7 +30,7 @@ export default function () {
         }
     }
     else
-        console.log('No .testcaferc.js found');
+        console.log('No .testcaferc.js or .testcaferc.cjs found');
 
     const hasFilter = filter.length > 0;
 
