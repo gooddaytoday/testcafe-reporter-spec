@@ -4,17 +4,16 @@ const path = require('path');
 
 export default function () {
     const reporterName = 'spec-plus';
+    const configPaths = ['.testcaferc.js', '.testcaferc.cjs'];
 
-    const configPath = ['.testcaferc.js', '.testcaferc.cjs'].reduce(
-        (acc, file) => acc || path.resolve(process.cwd(), file),
-        null
-    );
+    /** @type {string | undefined} */
+    const configPath = configPaths.map(file => path.resolve(process.cwd(), file)).find(file => fs.existsSync(file));
 
     let showProgress = false;
     let showDuration = false;
     let filter = [];
 
-    if (fs.existsSync(configPath)) {
+    if (configPath) {
         const config = require(configPath);
         const reporters = config['reporter'];
 
