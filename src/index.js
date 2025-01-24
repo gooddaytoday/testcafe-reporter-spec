@@ -236,7 +236,7 @@ export default function () {
 
             footer += this.chalk.grey(` (${durationStr})`);
             if (showDuration)
-                footer += this.chalk.grey(` Total time of all tests: ${this.totalDuration}`);
+                footer += this.chalk.grey(` Total time of all tests: ${this.totalDuration / 1000 / 60 / 60}h`);
 
             if (!this.afterErrorList)
                 this.newline();
