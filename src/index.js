@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 const path = require('path');
 
@@ -40,10 +39,13 @@ export default function () {
         testCount:      0,
         testsFinished:  0,
         skipped:        0,
+        /** @type {number} */
+        totalDuration:  0,
 
         reportTaskStart (startTime, userAgents, testCount) {
             this.startTime = startTime;
             this.testCount = testCount;
+            this.totalDuration = 0;
 
             const writeData = { startTime, userAgents, testCount };
 
@@ -96,6 +98,8 @@ export default function () {
             let symbol    = null;
             let nameStyle = null;
             const durationMs = testRunInfo.durationMs;
+
+            this.totalDuration += durationMs;
 
             if (testRunInfo.skipped) {
                 this.skipped++;
@@ -231,6 +235,8 @@ export default function () {
                 this.chalk.bold.red(`${this.testCount - passed}/${this.testCount} failed`);
 
             footer += this.chalk.grey(` (${durationStr})`);
+            if (showDuration)
+                footer += this.chalk.grey(` Total time of all tests: ${this.totalDuration}`);
 
             if (!this.afterErrorList)
                 this.newline();
