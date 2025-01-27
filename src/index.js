@@ -235,8 +235,11 @@ export default function () {
                 this.chalk.bold.red(`${this.testCount - passed}/${this.testCount} failed`);
 
             footer += this.chalk.grey(` (${durationStr})`);
-            if (showDuration)
-                footer += this.chalk.grey(` Total time of all tests: ${this.totalDuration / 1000 / 60 / 60}h`);
+            if (showDuration) {
+                const hours = (this.totalDuration / 1000 / 60 / 60).toFixed(2);
+
+                footer += this.chalk.grey(`            Total time of all tests: ${hours}h`);
+            }
 
             if (!this.afterErrorList)
                 this.newline();
