@@ -11,6 +11,7 @@
     "lib"
   ],
   "scripts": {
+    "version": "npm version patch",
     "test": "gulp test",
     "build": "gulp build",
     "publish-please": "publish-please",
