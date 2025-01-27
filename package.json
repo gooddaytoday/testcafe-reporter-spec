@@ -1,6 +1,6 @@
 {
   "name": "testcafe-reporter-spec-plus",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Spec TestCafe reporter plugin with warnings filter and other bonuses.",
   "repository": "https://github.com/gooddaytoday/testcafe-reporter-spec",
   "author": {
